@@ -1,0 +1,60 @@
+# Chiltrix CX50 Binary Sensors
+# Status indicators for dashboard
+
+- binary_sensor:
+    # ==========================================
+    # SYSTEM STATUS
+    # ==========================================
+    
+    - name: "CX Power Status"
+      unique_id: cx_power_status
+      device_class: power
+      state: >-
+        {% set compressor_freq = states('sensor.cx50_compressor_frequency') | float(0) %}
+        {{ compressor_freq > 0 }}
+    
+    - name: "CX Defrost Active"
+      unique_id: cx_defrost_active
+      device_class: cold
+      state: >-
+        {% set c28 = states('sensor.cx50_c28') | float(0) %}
+        {{ c28 == 1 }}
+    
+    - name: "CX Error Status"
+      unique_id: cx_error_status
+      device_class: problem
+      state: >-
+        {% set error_code = states('sensor.cx_error_code') | int(0) %}
+        {{ error_code > 0 }}
+    
+    # ==========================================
+    # OPERATING MODES
+    # ==========================================
+    
+    - name: "CX ECO Mode"
+      unique_id: cx_eco_mode
+      state: >-
+        {% set mode = states('sensor.cx50_operating_mode') | int(0) %}
+        {% set c14 = states('sensor.cx50_c14') | float(0) %}
+        {{ mode > 0 and c14 == 1 }}
+    
+    - name: "CX Comfort Mode"
+      unique_id: cx_comfort_mode
+      state: >-
+        {% set mode = states('sensor.cx50_operating_mode') | int(0) %}
+        {% set c17 = states('sensor.cx50_c17') | float(0) %}
+        {{ mode > 0 and c17 == 1 }}
+    
+    - name: "CX Boost Mode"
+      unique_id: cx_boost_mode
+      state: >-
+        {% set compressor_freq = states('sensor.cx50_compressor_frequency') | float(0) %}
+        {{ compressor_freq > 100 }}
+    
+    - name: "CX Silent Mode"
+      unique_id: cx_silent_mode
+      state: >-
+        {% set fan1 = states('sensor.cx50_c45_ec_fan_motor_1_speed') | float(0) %}
+        {% set fan2 = states('sensor.cx50_c46_ec_fan_motor_2_speed') | float(0) %}
+        {% set compressor_freq = states('sensor.cx50_compressor_frequency') | float(0) %}
+        {{ (fan1 + fan2) < 20 and compressor_freq > 0 and compressor_freq < 50 }}
